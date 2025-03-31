@@ -17,11 +17,15 @@
 package com.splunk.opentelemetry.profiler.snapshot;
 
 /**
- * Acts as a location to stockpile gathered {@link StackTrace}s segmented by thread ID for bulk
- * exportation at some later point in time.
+ * Acts as a location to stockpile gathered {@link StackTrace}s for bulk export at some later
+ * point in time.
  */
 interface StagingArea {
   void stage(StackTrace stackTrace);
 
-  void empty(String traceId);
+  default void empty(String traceId){
+    empty();
+  }
+
+  default void empty(){}
 }

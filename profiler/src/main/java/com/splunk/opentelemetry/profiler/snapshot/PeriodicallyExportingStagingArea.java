@@ -25,7 +25,7 @@ class PeriodicallyExportingStagingArea implements StagingArea, Closeable {
   }
 
   @Override
-  public void empty(String traceId) {
+  public void empty() {
     exporter.get().export(stackTraces);
     stackTraces.clear();
   }
