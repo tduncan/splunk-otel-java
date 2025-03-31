@@ -16,11 +16,12 @@
 
 package com.splunk.opentelemetry.profiler.snapshot;
 
+import java.util.Collection;
 import java.util.List;
 
 /** Works in concert with the {@link StagingArea} to export a batch of {@link StackTrace}s */
 interface StackTraceExporter {
   StackTraceExporter NOOP = stackTraces -> {};
 
-  void export(List<StackTrace> stackTraces);
+  void export(Collection<StackTrace> stackTraces);
 }
