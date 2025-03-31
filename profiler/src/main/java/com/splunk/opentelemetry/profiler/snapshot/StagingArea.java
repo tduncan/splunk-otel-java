@@ -21,7 +21,7 @@ package com.splunk.opentelemetry.profiler.snapshot;
  * exportation at some later point in time.
  */
 interface StagingArea {
-  void stage(String traceId, StackTrace stackTrace);
+  void stage(StackTrace stackTrace);
 
   void empty(String traceId);
 }

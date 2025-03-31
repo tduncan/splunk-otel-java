@@ -94,7 +94,7 @@ class ScheduledExecutorStackTraceSampler implements StackTraceSampler {
         SpanContext spanContext = retrieveActiveSpan(thread);
         StackTrace stackTrace =
             StackTrace.from(now, samplingPeriod, threadInfo, traceId, spanContext.getSpanId());
-        stagingArea.stage(traceId, stackTrace);
+        stagingArea.stage(stackTrace);
       } catch (Exception e) {
         logger.log(Level.SEVERE, e, samplerErrorMessage(traceId, thread.getId()));
       }

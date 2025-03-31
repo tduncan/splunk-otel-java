@@ -31,9 +31,9 @@ class AccumulatingStagingArea implements StagingArea {
   }
 
   @Override
-  public void stage(String traceId, StackTrace stackTrace) {
+  public void stage(StackTrace stackTrace) {
     stackTraces.compute(
-        traceId,
+        stackTrace.getTraceId(),
         (id, stackTraces) -> {
           if (stackTraces == null) {
             stackTraces = new ArrayList<>();

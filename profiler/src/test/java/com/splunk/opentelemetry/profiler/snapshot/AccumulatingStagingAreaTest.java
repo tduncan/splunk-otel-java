@@ -29,11 +29,10 @@ class AccumulatingStagingAreaTest {
 
   @Test
   void exportStackTracesToLogExporter() {
-    var traceId = IdGenerator.random().generateTraceId();
     var stackTrace = Snapshotting.stackTrace().build();
 
-    stagingArea.stage(traceId, stackTrace);
-    stagingArea.empty(traceId);
+    stagingArea.stage(stackTrace);
+    stagingArea.empty(stackTrace.getTraceId());
 
     assertEquals(List.of(stackTrace), exporter.stackTraces());
   }
@@ -48,11 +47,11 @@ class AccumulatingStagingAreaTest {
   @Test
   void exportMultipleStackTracesToLogExporter() {
     var traceId = IdGenerator.random().generateTraceId();
-    var stackTrace1 = Snapshotting.stackTrace().withId(1).withName("one").build();
-    var stackTrace2 = Snapshotting.stackTrace().withId(1).withName("two").build();
+    var stackTrace1 = Snapshotting.stackTrace().withId(1).withTraceId(traceId).withName("one").build();
+    var stackTrace2 = Snapshotting.stackTrace().withId(1).withTraceId(traceId).withName("two").build();
 
-    stagingArea.stage(traceId, stackTrace1);
-    stagingArea.stage(traceId, stackTrace2);
+    stagingArea.stage(stackTrace1);
+    stagingArea.stage(stackTrace2);
     stagingArea.empty(traceId);
 
     assertEquals(List.of(stackTrace1, stackTrace2), exporter.stackTraces());
@@ -60,41 +59,36 @@ class AccumulatingStagingAreaTest {
 
   @Test
   void exportStackTracesForOnlySpecifiedThread() {
-    var traceId1 = IdGenerator.random().generateTraceId();
-    var traceId2 = IdGenerator.random().generateTraceId();
     var stackTrace1 = Snapshotting.stackTrace().withId(1).withName("one").build();
     var stackTrace2 = Snapshotting.stackTrace().withId(1).withName("two").build();
 
-    stagingArea.stage(traceId1, stackTrace1);
-    stagingArea.stage(traceId2, stackTrace2);
-    stagingArea.empty(traceId1);
+    stagingArea.stage(stackTrace1);
+    stagingArea.stage(stackTrace2);
+    stagingArea.empty(stackTrace1.getTraceId());
 
     assertEquals(List.of(stackTrace1), exporter.stackTraces());
   }
 
   @Test
   void exportStackTracesForMultipleThreads() {
-    var traceId1 = IdGenerator.random().generateTraceId();
-    var traceId2 = IdGenerator.random().generateTraceId();
     var stackTrace1 = Snapshotting.stackTrace().withId(1).withName("one").build();
     var stackTrace2 = Snapshotting.stackTrace().withId(1).withName("two").build();
 
-    stagingArea.stage(traceId1, stackTrace1);
-    stagingArea.stage(traceId2, stackTrace2);
-    stagingArea.empty(traceId1);
-    stagingArea.empty(traceId2);
+    stagingArea.stage(stackTrace1);
+    stagingArea.stage(stackTrace2);
+    stagingArea.empty(stackTrace1.getTraceId());
+    stagingArea.empty(stackTrace2.getTraceId());
 
     assertEquals(List.of(stackTrace1, stackTrace2), exporter.stackTraces());
   }
 
   @Test
   void stackTracesAreNotExportedMultipleTimes() {
-    var traceId = IdGenerator.random().generateTraceId();
     var stackTrace = Snapshotting.stackTrace().build();
 
-    stagingArea.stage(traceId, stackTrace);
-    stagingArea.empty(traceId);
-    stagingArea.empty(traceId);
+    stagingArea.stage(stackTrace);
+    stagingArea.empty(stackTrace.getTraceId());
+    stagingArea.empty(stackTrace.getTraceId());
 
     assertEquals(List.of(stackTrace), exporter.stackTraces());
   }

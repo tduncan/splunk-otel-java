@@ -23,7 +23,7 @@ class PeriodicallyExportingStagingAreaTest {
   void automaticallyEmptyStagingAreaPeriodically() {
     var stackTrace = Snapshotting.stackTrace().build();
 
-    stagingArea.stage("", stackTrace);
+    stagingArea.stage(stackTrace);
     await().until(() -> !exporter.stackTraces().isEmpty());
 
     assertThat(exporter.stackTraces()).contains(stackTrace);
@@ -34,8 +34,8 @@ class PeriodicallyExportingStagingAreaTest {
     var stackTrace1 = Snapshotting.stackTrace().withId(1).withName("one").build();
     var stackTrace2 = Snapshotting.stackTrace().withId(2).withName("two").build();
 
-    stagingArea.stage("", stackTrace1);
-    stagingArea.stage("", stackTrace2);
+    stagingArea.stage(stackTrace1);
+    stagingArea.stage(stackTrace2);
     await().until(() -> !exporter.stackTraces().isEmpty());
 
     assertThat(exporter.stackTraces()).contains(stackTrace1, stackTrace2);
@@ -45,7 +45,7 @@ class PeriodicallyExportingStagingAreaTest {
   void stackTracesAreNotExportedMultipleTimes() {
     var stackTrace = Snapshotting.stackTrace().build();
 
-    stagingArea.stage("", stackTrace);
+    stagingArea.stage(stackTrace);
     await().until(() -> !exporter.stackTraces().isEmpty());
 
     assertEquals(List.of(stackTrace), exporter.stackTraces());
