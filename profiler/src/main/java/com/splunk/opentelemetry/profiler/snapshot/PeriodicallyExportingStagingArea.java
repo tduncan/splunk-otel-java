@@ -16,13 +16,16 @@ class PeriodicallyExportingStagingArea implements StagingArea, Closeable {
 
   PeriodicallyExportingStagingArea(Supplier<StackTraceExporter> exporter, Duration emptyDuration) {
     this.exporter = exporter;
-    scheduler.scheduleAtFixedRate(() -> empty(""), 0, emptyDuration.toMillis(), TimeUnit.MILLISECONDS);
+    scheduler.scheduleAtFixedRate(this::empty, 0, emptyDuration.toMillis(), TimeUnit.MILLISECONDS);
   }
 
   @Override
   public void stage(StackTrace stackTrace) {
     stackTraces.add(stackTrace);
   }
+
+  @Override
+  public void empty(String traceId) {}
 
   @Override
   public void empty() {
