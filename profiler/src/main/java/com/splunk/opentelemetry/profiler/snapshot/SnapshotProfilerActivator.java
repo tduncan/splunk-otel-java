@@ -43,7 +43,7 @@ public class SnapshotProfilerActivator implements AgentListener {
   }
 
   private void activateStagingArea(ConfigProperties properties) {
-    Duration stagingAreaEmptyInterval = Duration.ofSeconds(2); // TODO from config
+    Duration stagingAreaEmptyInterval = Configuration.getSnapshotProfilerExportInterval(properties);
     PeriodicallyExportingStagingArea stagingArea = new PeriodicallyExportingStagingArea(StackTraceExporterProvider.INSTANCE, stagingAreaEmptyInterval);
     StagingAreaProvider.INSTANCE.configure(stagingArea);
     registerForShutdown(stagingArea);

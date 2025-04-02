@@ -24,6 +24,7 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.DefaultConfigProperties;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -80,6 +81,9 @@ public class Configuration implements AutoConfigurationCustomizerProvider {
   private static final String CONFIG_KEY_SNAPSHOT_PROFILER_SAMPLING_INTERVAL =
       "splunk.snapshot.profiler.sampling.interval";
   public static final Duration DEFAULT_SNAPSHOT_PROFILER_SAMPLING_INTERVAL = Duration.ofMillis(20);
+  private static final String CONFIG_KEY_SNAPSHOT_PROFILER_EXPORT_INTERVAL =
+      "splunk.snapshot.profiler.export.interval";
+  public static final Duration DEFAULT_SNAPSHOT_PROFILER_EXPORT_INTERVAL = Duration.ofSeconds(5);
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfiguration) {
@@ -227,5 +231,9 @@ public class Configuration implements AutoConfigurationCustomizerProvider {
     return properties.getDuration(
         CONFIG_KEY_SNAPSHOT_PROFILER_SAMPLING_INTERVAL,
         DEFAULT_SNAPSHOT_PROFILER_SAMPLING_INTERVAL);
+  }
+
+  public static Duration getSnapshotProfilerExportInterval(ConfigProperties properties) {
+    return properties.getDuration(CONFIG_KEY_SNAPSHOT_PROFILER_EXPORT_INTERVAL, DEFAULT_SNAPSHOT_PROFILER_EXPORT_INTERVAL);
   }
 }

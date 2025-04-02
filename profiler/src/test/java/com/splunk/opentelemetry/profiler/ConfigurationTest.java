@@ -204,4 +204,20 @@ class ConfigurationTest {
     assertEquals(
         Duration.ofMillis(20), Configuration.getSnapshotProfilerSamplingInterval(properties));
   }
+
+  @Test
+  void getDefaultSnapshotProfilerExportInterval() {
+    var properties = DefaultConfigProperties.create(Collections.emptyMap());
+    assertEquals(Duration.ofSeconds(5), Configuration.getSnapshotProfilerExportInterval(properties));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {1000, 2000, 10_000})
+  void getConfiguredSnapshotProfilerExportInterval(int milliseconds) {
+    var properties = DefaultConfigProperties.create(Map.of(
+        "splunk.snapshot.profiler.export.interval",
+        String.valueOf(milliseconds)
+    ));
+    assertEquals(Duration.ofMillis(milliseconds), Configuration.getSnapshotProfilerExportInterval(properties));
+  }
 }
