@@ -36,5 +36,6 @@ class PeriodicallyExportingStagingArea implements StagingArea, Closeable {
   @Override
   public void close() {
     scheduler.shutdown();
+    exporter.get().export(stackTraces);
   }
 }

@@ -50,4 +50,15 @@ class PeriodicallyExportingStagingAreaTest {
 
     assertEquals(List.of(stackTrace), exporter.stackTraces());
   }
+
+  @Test
+  void stackTracesAreExportedImmediatelyUponShutdown() {
+    var stackTrace = Snapshotting.stackTrace().build();
+
+    var stagingArea = new PeriodicallyExportingStagingArea(() -> exporter, Duration.ofDays(1));
+    stagingArea.stage(stackTrace);
+    stagingArea.close();
+
+    assertEquals(List.of(stackTrace), exporter.stackTraces());
+  }
 }
