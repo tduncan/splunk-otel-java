@@ -5,12 +5,15 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.function.Supplier;
 
 class SdkShutdownHook implements SpanProcessor {
-  private final List<Closeable> closeables = new ArrayList<>();
+  private final Supplier<Closer> closer;
+
+  SdkShutdownHook(Supplier<Closer> closer) {
+    this.closer = closer;
+  }
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {}
@@ -30,18 +33,6 @@ class SdkShutdownHook implements SpanProcessor {
 
   @Override
   public CompletableResultCode shutdown() {
-    List<CompletableResultCode> results = new ArrayList<>();
-    for (Closeable closeable : closeables) {
-      try {
-        closeable.close();
-      } catch (Exception e) {
-        results.add(CompletableResultCode.ofExceptionalFailure(e));
-      }
-    }
-    return CompletableResultCode.ofAll(results);
-  }
-
-  void add(Closeable closeable) {
-    closeables.add(closeable);
+    return closer.get().close();
   }
 }

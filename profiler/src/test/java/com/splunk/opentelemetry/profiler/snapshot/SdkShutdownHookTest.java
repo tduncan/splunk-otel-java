@@ -7,12 +7,14 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 class SdkShutdownHookTest {
-  private final SdkShutdownHook shutdownHook = new SdkShutdownHook();
+  private final Closer closer = new Closer();
+  private final SdkShutdownHook shutdownHook = new SdkShutdownHook(() -> closer);
 
   @Test
   void shutdownClosesAddedCloseable() {
     var thingToClose = new SuccessfulCloseable();
-    shutdownHook.add(thingToClose);
+
+    closer.add(thingToClose);
     shutdownHook.shutdown();
 
     assertThat(thingToClose.closed).isTrue();
@@ -23,8 +25,8 @@ class SdkShutdownHookTest {
     var one = new SuccessfulCloseable();
     var two = new SuccessfulCloseable();
 
-    shutdownHook.add(one);
-    shutdownHook.add(two);
+    closer.add(one);
+    closer.add(two);
     shutdownHook.shutdown();
 
     assertThat(one.closed).isTrue();
@@ -33,8 +35,8 @@ class SdkShutdownHookTest {
 
   @Test
   void shutdownReportsSuccessAllCloseablesCloseSuccessfully() {
-    shutdownHook.add(new SuccessfulCloseable());
-    shutdownHook.add(new SuccessfulCloseable());
+    closer.add(new SuccessfulCloseable());
+    closer.add(new SuccessfulCloseable());
 
     var result = shutdownHook.shutdown();
     assertThat(result.isSuccess()).isTrue();
@@ -42,7 +44,7 @@ class SdkShutdownHookTest {
 
   @Test
   void shutdownReportsFailureWhenCloseableFailsToClose() {
-    shutdownHook.add(new ExceptionThrowingCloseable());
+    closer.add(new ExceptionThrowingCloseable());
 
     var result = shutdownHook.shutdown();
     assertThat(result.isSuccess()).isFalse();
@@ -50,9 +52,9 @@ class SdkShutdownHookTest {
 
   @Test
   void shutdownReportsFailureWhenAtLeaseCloseableFailsToClose() {
-    shutdownHook.add(new SuccessfulCloseable());
-    shutdownHook.add(new ExceptionThrowingCloseable());
-    shutdownHook.add(new SuccessfulCloseable());
+    closer.add(new SuccessfulCloseable());
+    closer.add(new ExceptionThrowingCloseable());
+    closer.add(new SuccessfulCloseable());
 
     var result = shutdownHook.shutdown();
     assertThat(result.isSuccess()).isFalse();
