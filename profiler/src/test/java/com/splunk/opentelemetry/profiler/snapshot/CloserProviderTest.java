@@ -14,20 +14,19 @@ class CloserProviderTest {
   }
 
   @Test
-  void provideNoopExporterWhenNotConfigured() {
+  void provideNoopCloserWhenNotConfigured() {
     assertSame(Closer.NOOP, provider.get());
   }
 
   @Test
-  void providedConfiguredExporter() {
+  void providedConfiguredCloser() {
     var closer = new Closer();
     provider.configure(closer);
     assertSame(closer, provider.get());
   }
 
   @Test
-  void canResetConfiguredExporter() {
-    var closer = new Closer();
+  void canResetConfiguredCloser() {
     provider.reset();
     assertSame(Closer.NOOP, provider.get());
   }

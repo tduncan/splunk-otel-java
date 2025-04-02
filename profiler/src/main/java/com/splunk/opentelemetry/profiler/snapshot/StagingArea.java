@@ -21,6 +21,8 @@ package com.splunk.opentelemetry.profiler.snapshot;
  * point in time.
  */
 interface StagingArea {
+  StagingArea NOOP = (stackTrace) -> {};
+
   void stage(StackTrace stackTrace);
 
   default void empty(String traceId){
