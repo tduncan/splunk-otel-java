@@ -28,7 +28,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 
 class SpanSamplingTest {
-  private final TraceRegistry registry = new TraceRegistry();
+  private final RecordingTraceRegistry registry = new RecordingTraceRegistry();
   private final SnapshotProfilingSdkCustomizer customizer =
       Snapshotting.customizer().with(registry).build();
 

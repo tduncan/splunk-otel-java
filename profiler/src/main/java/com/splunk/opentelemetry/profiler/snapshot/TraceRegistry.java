@@ -17,22 +17,61 @@
 package com.splunk.opentelemetry.profiler.snapshot;
 
 import io.opentelemetry.api.trace.SpanContext;
-import java.util.Collections;
-import java.util.Set;
+import java.io.Closeable;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
-class TraceRegistry {
-  private final Set<String> traceIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
+class TraceRegistry implements Closeable {
+  private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+  private final Map<String, Instant> traceIds = new ConcurrentHashMap<>();
+  private final Supplier<TraceRegistrationNotifier> notifier;
 
-  public void register(SpanContext spanContext) {
-    traceIds.add(spanContext.getTraceId());
+  TraceRegistry(Supplier<TraceRegistrationNotifier> notifier) {
+    this(notifier, Duration.ofSeconds(10));
   }
 
-  public boolean isRegistered(SpanContext spanContext) {
-    return traceIds.contains(spanContext.getTraceId());
+  TraceRegistry(Supplier<TraceRegistrationNotifier> notifier, Duration stalledTimeLimit) {
+    this.notifier = notifier;
+    scheduler.scheduleAtFixedRate(removeStalledTraces(stalledTimeLimit), 0, stalledTimeLimit.toMillis() / 2, TimeUnit.MILLISECONDS);
   }
 
-  public void unregister(SpanContext spanContext) {
-    traceIds.remove(spanContext.getTraceId());
+  void register(SpanContext spanContext) {
+    traceIds.put(spanContext.getTraceId(), Instant.now());
+    notifier.get().traceRegistered(spanContext.getTraceId());
+  }
+
+  boolean isRegistered(SpanContext spanContext) {
+    return traceIds.containsKey(spanContext.getTraceId());
+  }
+
+  void unregister(SpanContext spanContext) {
+    unregister(spanContext.getTraceId());
+  }
+
+  private void unregister(String traceId) {
+    traceIds.remove(traceId);
+    notifier.get().traceUnregistered(traceId);
+  }
+
+  private Runnable removeStalledTraces(Duration stalledTimeLimit) {
+    return () -> traceIds.entrySet().iterator().forEachRemaining(entry -> {
+      Instant now = Instant.now();
+      Instant registrationTime = entry.getValue();
+      Duration duration = Duration.between(now, registrationTime);
+      if (duration.compareTo(stalledTimeLimit) <= 0) {
+        unregister(entry.getKey());
+      }
+    });
+  }
+
+  @Override
+  public void close() {
+    scheduler.shutdown();
   }
 }

@@ -28,6 +28,10 @@ import java.util.Set;
 class RecordingTraceRegistry extends TraceRegistry {
   private final Set<String> registeredTraceIds = new HashSet<>();
 
+  RecordingTraceRegistry() {
+    super(() -> new TraceRegistrationNotifier(StackTraceSamplerProvider.INSTANCE));
+  }
+
   @Override
   public void register(SpanContext spanContext) {
     registeredTraceIds.add(spanContext.getTraceId());

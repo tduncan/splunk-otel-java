@@ -16,34 +16,22 @@
 
 package com.splunk.opentelemetry.profiler.snapshot;
 
-import io.opentelemetry.api.trace.SpanContext;
+import java.util.Objects;
+import java.util.function.Supplier;
 
-class TogglableTraceRegistry extends RecordingTraceRegistry {
-  enum State {
-    ON,
-    OFF
-  }
+class StackTraceSamplerProvider implements Supplier<StackTraceSampler> {
+  public static final StackTraceSamplerProvider INSTANCE = new StackTraceSamplerProvider();
 
-  private State state = State.ON;
+  private StackTraceSampler sampler = StackTraceSampler.NOOP;
 
   @Override
-  public void register(SpanContext spanContext) {
-    if (state == State.ON) {
-      super.register(spanContext);
-    }
+  public StackTraceSampler get() {
+    return sampler;
   }
 
-  public void toggle(State state) {
-    this.state = state;
+  void configure(StackTraceSampler sampler) {
+    this.sampler = Objects.requireNonNull(sampler);
   }
 
-  @Override
-  public boolean isRegistered(SpanContext spanContext) {
-    return super.isRegistered(spanContext);
-  }
-
-  @Override
-  public void unregister(SpanContext spanContext) {
-    super.unregister(spanContext);
-  }
+  private StackTraceSamplerProvider() {}
 }
