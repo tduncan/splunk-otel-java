@@ -73,6 +73,7 @@ public class SnapshotProfilingSdkCustomizer implements AutoConfigurationCustomiz
     autoConfigurationCustomizer
         .addPropertiesCustomizer(autoConfigureSnapshotVolumePropagator())
         .addTracerProviderCustomizer(snapshotProfilingSpanProcessor(registry))
+        .addPropertiesCustomizer(activateStackTraceSampler())
         .addPropertiesCustomizer(startTrackingActiveSpans(registry))
         .addTracerProviderCustomizer(addShutdownHook());
   }
@@ -91,12 +92,20 @@ public class SnapshotProfilingSdkCustomizer implements AutoConfigurationCustomiz
       snapshotProfilingSpanProcessor(TraceRegistry registry) {
     return (builder, properties) -> {
       if (snapshotProfilingEnabled(properties)) {
-        StackTraceSampler sampler = samplerProvider.apply(properties);
-        ConfigurableSupplier<StackTraceSampler> supplier = StackTraceSampler.SUPPLIER;
-        supplier.configure(sampler);
-        return builder.addSpanProcessor(new SnapshotProfilingSpanProcessor(registry, supplier));
+        StackTraceSamplerProvider.INSTANCE.configure(samplerProvider.apply(properties));
+        return builder.addSpanProcessor(new SnapshotProfilingSpanProcessor(registry));
       }
       return builder;
+    };
+  }
+
+  private Function<ConfigProperties, Map<String, String>> activateStackTraceSampler() {
+    return properties -> {
+      if (snapshotProfilingEnabled(properties)) {
+        StackTraceSampler sampler = samplerProvider.apply(properties);
+        StackTraceSamplerProvider.INSTANCE.configure(sampler);
+      }
+      return Collections.emptyMap();
     };
   }
 

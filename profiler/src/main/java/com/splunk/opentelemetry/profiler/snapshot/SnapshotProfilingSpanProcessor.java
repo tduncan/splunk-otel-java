@@ -23,7 +23,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import java.util.function.Supplier;
 
 /**
  * Custom {@link SpanProcessor} implementation that will 1. register traces for snapshot profiling
@@ -38,11 +37,9 @@ import java.util.function.Supplier;
  */
 public class SnapshotProfilingSpanProcessor implements SpanProcessor {
   private final TraceRegistry registry;
-  private final Supplier<StackTraceSampler> sampler;
 
-  SnapshotProfilingSpanProcessor(TraceRegistry registry, Supplier<StackTraceSampler> sampler) {
+  SnapshotProfilingSpanProcessor(TraceRegistry registry) {
     this.registry = registry;
-    this.sampler = sampler;
   }
 
   @Override
@@ -55,7 +52,6 @@ public class SnapshotProfilingSpanProcessor implements SpanProcessor {
     }
 
     if (isEntry(span) && registry.isRegistered(span.getSpanContext())) {
-      sampler.get().start(span.getSpanContext());
       span.setAttribute(SNAPSHOT_PROFILING, true);
     }
   }
@@ -76,7 +72,6 @@ public class SnapshotProfilingSpanProcessor implements SpanProcessor {
   public void onEnd(ReadableSpan span) {
     if (isEntry(span)) {
       registry.unregister(span.getSpanContext());
-      sampler.get().stop(span.getSpanContext());
     }
   }
 
