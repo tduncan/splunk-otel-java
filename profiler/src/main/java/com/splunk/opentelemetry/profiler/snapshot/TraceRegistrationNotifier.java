@@ -3,9 +3,6 @@ package com.splunk.opentelemetry.profiler.snapshot;
 import java.util.function.Supplier;
 
 class TraceRegistrationNotifier {
-  static final TraceRegistrationNotifier INSTANCE = new TraceRegistrationNotifier(
-      StackTraceSamplerProvider.INSTANCE);
-
   private final Supplier<StackTraceSampler> sampler;
 
   TraceRegistrationNotifier(Supplier<StackTraceSampler> sampler) {
