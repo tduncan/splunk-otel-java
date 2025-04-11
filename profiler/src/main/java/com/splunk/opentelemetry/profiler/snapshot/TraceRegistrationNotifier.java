@@ -1,9 +1,5 @@
 package com.splunk.opentelemetry.profiler.snapshot;
 
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceState;
-import io.opentelemetry.sdk.trace.IdGenerator;
 import java.util.function.Supplier;
 
 class TraceRegistrationNotifier {
@@ -17,12 +13,10 @@ class TraceRegistrationNotifier {
   }
 
   void traceRegistered(String traceId) {
-    SpanContext spanContext = SpanContext.create(traceId, IdGenerator.random().generateSpanId(), TraceFlags.getDefault(), TraceState.getDefault());
-    sampler.get().start(spanContext);
+    sampler.get().start(traceId);
   }
 
   void traceUnregistered(String traceId) {
-    SpanContext spanContext = SpanContext.create(traceId, IdGenerator.random().generateSpanId(), TraceFlags.getDefault(), TraceState.getDefault());
-    sampler.get().stop(spanContext);
+    sampler.get().stop(traceId);
   }
 }
