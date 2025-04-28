@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 
 class TraceRegistry implements Closeable {
   private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-  private final Map<String, Instant> traceIds = new ConcurrentHashMap<>();
+  private final Map<String, RegistrationContext> traceIds = new ConcurrentHashMap<>();
   private final Supplier<TraceRegistrationNotifier> notifier;
 
   TraceRegistry(Supplier<TraceRegistrationNotifier> notifier) {
@@ -38,12 +38,16 @@ class TraceRegistry implements Closeable {
 
   TraceRegistry(Supplier<TraceRegistrationNotifier> notifier, Duration stalledTimeLimit) {
     this.notifier = notifier;
-    scheduler.scheduleAtFixedRate(removeStalledTraces(stalledTimeLimit), 0, stalledTimeLimit.toMillis() / 2, TimeUnit.MILLISECONDS);
+    scheduler.scheduleAtFixedRate(
+        removeStalledTraces(stalledTimeLimit),
+        0,
+        stalledTimeLimit.toMillis() / 2,
+        TimeUnit.MILLISECONDS);
   }
 
   void register(SpanContext spanContext) {
-    traceIds.put(spanContext.getTraceId(), Instant.now());
-    notifier.get().traceRegistered(spanContext.getTraceId());
+    traceIds.put(spanContext.getTraceId(), new RegistrationContext(Instant.now(), spanContext));
+    notifier.get().traceRegistered(spanContext);
   }
 
   boolean isRegistered(SpanContext spanContext) {
@@ -51,27 +55,38 @@ class TraceRegistry implements Closeable {
   }
 
   void unregister(SpanContext spanContext) {
-    unregister(spanContext.getTraceId());
-  }
-
-  private void unregister(String traceId) {
-    traceIds.remove(traceId);
-    notifier.get().traceUnregistered(traceId);
+    traceIds.remove(spanContext.getTraceId());
+    notifier.get().traceUnregistered(spanContext);
   }
 
   private Runnable removeStalledTraces(Duration stalledTimeLimit) {
-    return () -> traceIds.entrySet().iterator().forEachRemaining(entry -> {
-      Instant now = Instant.now();
-      Instant registrationTime = entry.getValue();
-      Duration duration = Duration.between(now, registrationTime);
-      if (duration.compareTo(stalledTimeLimit) <= 0) {
-        unregister(entry.getKey());
-      }
-    });
+    return () ->
+        traceIds
+            .entrySet()
+            .iterator()
+            .forEachRemaining(
+                entry -> {
+                  Instant now = Instant.now();
+                  RegistrationContext context = entry.getValue();
+                  Duration duration = Duration.between(now, context.registrationTime);
+                  if (duration.compareTo(stalledTimeLimit) <= 0) {
+                    unregister(context.spanContext);
+                  }
+                });
   }
 
   @Override
   public void close() {
     scheduler.shutdown();
+  }
+
+  private static class RegistrationContext {
+    private final Instant registrationTime;
+    private final SpanContext spanContext;
+
+    private RegistrationContext(Instant registrationTime, SpanContext spanContext) {
+      this.registrationTime = registrationTime;
+      this.spanContext = spanContext;
+    }
   }
 }

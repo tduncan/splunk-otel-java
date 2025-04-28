@@ -19,7 +19,8 @@ package com.splunk.opentelemetry.profiler.snapshot;
 import java.time.Duration;
 
 class SnapshotProfilingSdkCustomizerBuilder {
-  private TraceRegistry registry = new TraceRegistry(() -> new TraceRegistrationNotifier(StackTraceSamplerProvider.INSTANCE));
+  private TraceRegistry registry =
+      new TraceRegistry(() -> new TraceRegistrationNotifier(StackTraceSampler.SUPPLIER));
   private StackTraceSampler sampler = new ObservableStackTraceSampler();
   private SpanTrackingActivator spanTrackingActivator = registry -> {};
 

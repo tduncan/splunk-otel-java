@@ -39,7 +39,7 @@ public class SnapshotProfilingSdkCustomizer implements AutoConfigurationCustomiz
 
   public SnapshotProfilingSdkCustomizer() {
     this(
-        new TraceRegistry(() -> new TraceRegistrationNotifier(StackTraceSamplerProvider.INSTANCE)),
+        new TraceRegistry(() -> new TraceRegistrationNotifier(StackTraceSampler.SUPPLIER)),
         stackTraceSamplerProvider(),
         new InterceptingContextStorageSpanTrackingActivator());
   }
@@ -92,7 +92,6 @@ public class SnapshotProfilingSdkCustomizer implements AutoConfigurationCustomiz
       snapshotProfilingSpanProcessor(TraceRegistry registry) {
     return (builder, properties) -> {
       if (snapshotProfilingEnabled(properties)) {
-        StackTraceSamplerProvider.INSTANCE.configure(samplerProvider.apply(properties));
         return builder.addSpanProcessor(new SnapshotProfilingSpanProcessor(registry));
       }
       return builder;
@@ -102,8 +101,7 @@ public class SnapshotProfilingSdkCustomizer implements AutoConfigurationCustomiz
   private Function<ConfigProperties, Map<String, String>> activateStackTraceSampler() {
     return properties -> {
       if (snapshotProfilingEnabled(properties)) {
-        StackTraceSampler sampler = samplerProvider.apply(properties);
-        StackTraceSamplerProvider.INSTANCE.configure(sampler);
+        StackTraceSampler.SUPPLIER.configure(samplerProvider.apply(properties));
       }
       return Collections.emptyMap();
     };

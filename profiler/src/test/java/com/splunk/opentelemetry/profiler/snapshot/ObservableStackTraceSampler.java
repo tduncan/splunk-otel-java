@@ -28,13 +28,13 @@ public class ObservableStackTraceSampler implements StackTraceSampler {
   private final Set<String> traceIds = new HashSet<>();
 
   @Override
-  public void start(String traceId) {
-    traceIds.add(traceId);
+  public void start(SpanContext spanContext) {
+    traceIds.add(spanContext.getTraceId());
   }
 
   @Override
-  public void stop(String traceId) {
-    traceIds.remove(traceId);
+  public void stop(SpanContext spanContext) {
+    traceIds.remove(spanContext.getTraceId());
   }
 
   boolean isBeingSampled(SpanContext spanContext) {

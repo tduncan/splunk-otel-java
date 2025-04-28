@@ -25,7 +25,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class TraceRegistryTest {
-  private final TraceRegistry registry = new TraceRegistry(() -> new  TraceRegistrationNotifier(() -> StackTraceSampler.NOOP));
+  private final TraceRegistry registry =
+      new TraceRegistry(() -> new TraceRegistrationNotifier(() -> StackTraceSampler.NOOP));
 
   @AfterEach
   void teardown() {

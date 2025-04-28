@@ -29,7 +29,7 @@ class RecordingTraceRegistry extends TraceRegistry {
   private final Set<String> registeredTraceIds = new HashSet<>();
 
   RecordingTraceRegistry() {
-    super(() -> new TraceRegistrationNotifier(StackTraceSamplerProvider.INSTANCE));
+    super(() -> new TraceRegistrationNotifier(StackTraceSampler.SUPPLIER));
   }
 
   @Override
